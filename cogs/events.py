@@ -66,14 +66,17 @@ class Events:
         elif before.name != after.name:
             log_message = ":name_badge: {1} (`{0.id}`) changed their username from {0} to {1}"
         elif before.roles != after.roles:
-            delta = set(before.roles).symmetric_difference(set(after.roles)).pop
-            if (delta in after.roles):
-                log_message = ":key: {0} (`{0.id}`) added a role {1.name}"
-            else:
-                log_message = ":key: {0} (`{0.id}`) removed a role {1.name}"
-            after = delta
+            delta = set(before.roles).symmetric_difference(set(after.roles))
+            for role in delta:
+                delta.pop
+                if (role in after.roles):
+                    log_message = ":key: {0} (`{0.id}`) added a role {1.name}"
+                else:
+                    log_message = ":key: {0} (`{0.id}`) removed a role {1.name}"
+                await self.bot.send_message(await self.get_log_channel(before.server.id),log_message.format(before,role))
+            return
         else:
-            pass
+            return
         await self.bot.send_message(await self.get_log_channel(before.server.id),log_message.format(before,after))
         
     async def on_command_error(self, exception, ctx):
